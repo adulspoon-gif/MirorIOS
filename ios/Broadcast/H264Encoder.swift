@@ -1,3 +1,4 @@
+import Foundation
 import VideoToolbox
 import CoreMedia
 import ReplayKit
@@ -62,7 +63,7 @@ final class H264Encoder {
         var s: VTCompressionSession?
         let st = VTCompressionSessionCreate(
             allocator: nil, width: w, height: h, codecType: kCMVideoCodecType_H264,
-            encoderSpecification: [kVTVideoEncoderSpecification_EnableHardwareAcceleratedVideoEncoder: true] as CFDictionary,
+            encoderSpecification: nil,
             imageBufferAttributes: nil, compressedDataAllocator: nil,
             outputCallback: nil, refcon: nil, compressionSessionOut: &s)
         guard st == noErr, let s = s else { return }
