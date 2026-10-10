@@ -1,3 +1,4 @@
+import Foundation
 import Network
 
 /// Server TCP kecil di dalam iPhone. PC menyambung lewat USB (usbmuxd), bukan WiFi.
