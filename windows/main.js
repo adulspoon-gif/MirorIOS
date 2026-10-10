@@ -6,6 +6,7 @@ const DEVICE_PORT = 8765; // harus sama dengan port di app iOS
 let win = null;
 let deviceId = null;
 let active = null;
+let lastErr = '';
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const send = (ch, ...args) => { if (win && !win.isDestroyed()) win.webContents.send(ch, ...args); };
@@ -37,11 +38,14 @@ async function loop() {
     try {
       const c = await usbmux.connect(deviceId, DEVICE_PORT);
       active = c.sock;
+      lastErr = '';
+      console.log('Tersambung ke iPhone (device ' + deviceId + ')');
       send('status', 'Terhubung, menunggu gambar…');
       await pump(c);
       send('status', 'Broadcast berhenti. Mulai lagi dari iPhone.');
-    } catch {
-      send('status', 'iPhone terdeteksi.\nDi iPhone: buka app “Mirror USB” → tekan tombol Broadcast → Start Broadcast.');
+    } catch (e) {
+      if (e.message !== lastErr) { lastErr = e.message; console.log('Gagal menyambung:', e.message); }
+      send('status', 'iPhone terdeteksi.\nDi iPhone: buka app “Mirror USB” → tekan tombol Broadcast → Start Broadcast.\n\n[kode: ' + e.message + ']');
     }
     await sleep(600);
   }
@@ -54,7 +58,7 @@ app.whenReady().then(() => {
   });
   win.loadFile('index.html');
   usbmux.watch({
-    onAttach: id => { deviceId = id; send('status', 'iPhone terdeteksi.'); },
+    onAttach: id => { deviceId = id; console.log('iPhone terdeteksi, device id', id); send('status', 'iPhone terdeteksi.'); },
     onDetach: id => { if (id === deviceId) { deviceId = null; if (active) active.destroy(); send('status', 'Kabel dicabut. Menunggu iPhone…'); } },
     onError: t => send('status', t),
   });
